@@ -1,5 +1,3 @@
-import grid_parser as parser
-
 def solve(grid: 'list[list[str]]', words: 'list[str]') -> 'dict[str,tuple[tuple[int,int],tuple[int,int]]]':
     solutions = {}
     indexed = index_grid(grid)
@@ -58,9 +56,3 @@ def safe_fetch(grid, position):
     # otherwise return the letter at position
     else:
         return grid[position[0]][position[1]]
-
-def test():
-    grid = parser.str_to_grid(open("word_search.txt", "r").read())
-    words = open("words.txt", "r").read().split("\n")
-    print(solve(grid, words))
-test()
