@@ -64,7 +64,7 @@ def get_blobs(img): # binary image
             if img.item(y, x) == 0 and not (y, x) in found_pixels:
                 blob = Blob((y, x), img)
                 blobs.append(blob)
-                found_pixels = found_pixels.union(blob.pixels)
+                found_pixels.update(blob.pixels)
     return blobs
 
 def test():
