@@ -11,6 +11,11 @@ class Blob:
         blob = Blob.get_blob(start, img, debug=img)
         self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
+
+        """for pixel in blob:
+            img.itemset(pixel[0], pixel[1], 127)
+        cv2.imshow("progress", img)
+        cv2.waitKey(1)"""
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
@@ -22,13 +27,7 @@ class Blob:
                 checked.add((y, x))
 
                 if img.item(y, x) == 0:
-                    debug.itemset(y, x, 127)
-                    cv2.imshow("progress", debug)
-                    cv2.waitKey(10)
-
                     pixels.append((y, x))
-                    # DEBUG
-                    test_img = img.copy()
                     
                     pixels += Blob.get_blob((y, x), img, checked=checked, debug=debug)
 
@@ -50,11 +49,23 @@ class Blob:
         
         return left, top, right-left+1, bottom-top+1
 
+
 def str_to_grid(string: str):
     return [[letter for letter in row] for row in string.split("\n")]
 
 def img_to_grid(img): # grayscale image
     pass
+
+def get_blobs(img): # binary image
+    blobs: 'list[Blob]' = []
+    found_pixels: 'set[tuple[int,int]]'= set()
+    for y in range(img.shape[0]):
+        for x in range(img.shape[1]):
+            if img.item(y, x) == 0 and not (y, x) in found_pixels:
+                blob = Blob((y, x), img)
+                blobs.append(blob)
+                found_pixels = found_pixels.union(blob.pixels)
+    return blobs
 
 def test():
     # read image as grayscale
@@ -62,18 +73,12 @@ def test():
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # convert to binary image
     (thresh, bin_img) = cv2.threshold(grayscale, 127, 256, cv2.THRESH_BINARY)
-    # find the first blob
-    blob: Blob
-    for y in range(bin_img.shape[0]):
-        for x in range(bin_img.shape[1]):
-            if bin_img.item(y, x) == 0:
-                blob = Blob((y, x), bin_img)
-                break
-        else:
-            continue
-        break
-    blobs_img = cv2.rectangle(img, (blob.x, blob.y), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
-    cv2.imshow("blobs image", blobs_img)
+    # find blobs
+    blobs = get_blobs(bin_img)
+    for blob in blobs:
+        img = cv2.rectangle(img, (blob.x, blob.y), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
+
+    cv2.imshow("blobs image", img)
     cv2.waitKey(0)
     
 
