@@ -80,20 +80,5 @@ def test():
 
     cv2.imshow("blobs image", img)
     cv2.waitKey(0)
-    
-
-def blob_test():
-    test_arr = [
-        [0, 0, 255, 255, 0],
-        [0, 0, 255, 255, 0],
-        [0, 0, 0, 255, 0],
-        [0, 255, 255, 255, 0],
-        [0, 0, 0, 0, 0]
-    ]
-    np_test = np.array(test_arr)
-    print(np_test)
-    print(np_test.item((3,1)))
-    test = Blob((0,2), np_test)
-    print(test.x, test.y, test.w, test.h)
 
 print(test())
