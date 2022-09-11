@@ -1,24 +1,37 @@
+from distutils.log import debug
+import inspect
 import cv2
 import numpy as np
 
 class Blob:
     x, y, w, h = int, int, int, int
+    pixels: 'set[tuple[int,int]]'
 
     def __init__(self, start: 'tuple[int,int]', img: np.ndarray):
-        blob = Blob.get_blob(start, img)
+        blob = Blob.get_blob(start, img, debug=img)
+        self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
     
-    def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set()) -> 'list[tuple[int,int]]':
+    def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
         for y in range(pos[0]-1, pos[0]+2):
             for x in range(pos[1]-1, pos[1]+2):
                 if (y, x) in checked:
-                    break
-                checked.add((y, x))
-                if img.item(y, x) == 0:
-                    pixels.append((y, x))
-                    pixels += Blob.get_blob((y, x), img, checked=checked)
+                    continue
                 
+                checked.add((y, x))
+
+                if img.item(y, x) == 0:
+                    debug.itemset(y, x, 127)
+                    cv2.imshow("progress", debug)
+                    cv2.waitKey(10)
+
+                    pixels.append((y, x))
+                    # DEBUG
+                    test_img = img.copy()
+                    
+                    pixels += Blob.get_blob((y, x), img, checked=checked, debug=debug)
+
         return pixels
     
     def get_blob_bounds(blob: 'list[tuple[int,int]]') -> 'int, int, int, int':
@@ -48,13 +61,8 @@ def test():
     img = cv2.imread("test_data/cropped_word_search.png", cv2.IMREAD_COLOR)
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # convert to binary image
-    (thresh, bin_img) = cv2.threshold(grayscale, 128, 256, cv2.THRESH_BINARY)
-    # display binary image
-    cv2.imshow("binary image", bin_img)
+    (thresh, bin_img) = cv2.threshold(grayscale, 127, 256, cv2.THRESH_BINARY)
     # find the first blob
-    print(bin_img.shape)
-    print(bin_img.item(0, 0))
-    # crop (19, 11) to (30, 29)
     blob: Blob
     for y in range(bin_img.shape[0]):
         for x in range(bin_img.shape[1]):
@@ -64,7 +72,6 @@ def test():
         else:
             continue
         break
-    print(blob.x, blob.y)
     blobs_img = cv2.rectangle(img, (blob.x, blob.y), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
     cv2.imshow("blobs image", blobs_img)
     cv2.waitKey(0)
@@ -72,11 +79,11 @@ def test():
 
 def blob_test():
     test_arr = [
-        [False, False, True, True, False],
-        [False, False, True, True, False],
-        [False, False, False, True, False],
-        [False, True, True, True, False],
-        [False, False, False, False, False]
+        [0, 0, 255, 255, 0],
+        [0, 0, 255, 255, 0],
+        [0, 0, 0, 255, 0],
+        [0, 255, 255, 255, 0],
+        [0, 0, 0, 0, 0]
     ]
     np_test = np.array(test_arr)
     print(np_test)
