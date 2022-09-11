@@ -16,6 +16,22 @@ class Blob:
                     pixels += self.get_blob((y, x), img, checked=checked)
                 
         return pixels
+    
+    def get_blob_bounds(self, blob: 'list[tuple[int,int]]') -> 'int, int, int, int':
+        left, right = blob[0][1], blob[0][1]
+        top, bottom = blob[0][0], blob[0][0]
+
+        for pixel in blob[1:]:
+            if pixel[0] < top:
+                top = pixel[0]
+            elif pixel[0] > bottom:
+                bottom = pixel[0]
+            if pixel[1] < left:
+                left = pixel[1]
+            elif pixel[1] > right:
+                right = pixel[1]
+        
+        return top, left, bottom, right
 
 def str_to_grid(string: str):
     return [[letter for letter in row] for row in string.split("\n")]
@@ -46,5 +62,6 @@ def blob_test():
     print(np_test.item((3,1)))
     test = Blob().get_blob((0,2), np_test)
     print(test)
+    print(Blob().get_blob_bounds(test))
 
 blob_test()
