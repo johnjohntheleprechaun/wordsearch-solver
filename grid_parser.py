@@ -15,7 +15,7 @@ class Blob:
                 if (y, x) in checked:
                     break
                 checked.add((y, x))
-                if img.item(y, x):
+                if img.item(y, x) == 0:
                     pixels.append((y, x))
                     pixels += Blob.get_blob((y, x), img, checked=checked)
                 
@@ -45,13 +45,30 @@ def img_to_grid(img): # grayscale image
 
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/cropped_word_search.png", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("test_data/cropped_word_search.png", cv2.IMREAD_COLOR)
+    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # convert to binary image
-    (thresh, bin_img) = cv2.threshold(img, 128, 256, cv2.THRESH_BINARY)
-    print(type(bin_img))
+    (thresh, bin_img) = cv2.threshold(grayscale, 128, 256, cv2.THRESH_BINARY)
     # display binary image
-    cv2.imshow("test", bin_img)
+    cv2.imshow("binary image", bin_img)
+    # find the first blob
+    print(bin_img.shape)
+    print(bin_img.item(0, 0))
+    # crop (19, 11) to (30, 29)
+    blob: Blob
+    for y in range(bin_img.shape[0]):
+        for x in range(bin_img.shape[1]):
+            if bin_img.item(y, x) == 0:
+                blob = Blob((y, x), bin_img)
+                break
+        else:
+            continue
+        break
+    print(blob.x, blob.y)
+    blobs_img = cv2.rectangle(img, (blob.x, blob.y), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
+    cv2.imshow("blobs image", blobs_img)
     cv2.waitKey(0)
+    
 
 def blob_test():
     test_arr = [
@@ -67,4 +84,4 @@ def blob_test():
     test = Blob((0,2), np_test)
     print(test.x, test.y, test.w, test.h)
 
-blob_test()
+print(test())
