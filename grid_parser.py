@@ -3,8 +3,12 @@ import numpy as np
 
 class Blob:
     x, y, w, h = int, int, int, int
+
+    def __init__(self, start: 'tuple[int,int]', img: np.ndarray):
+        blob = Blob.get_blob(start, img)
+        self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
     
-    def get_blob(self, pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set()) -> 'list[tuple[int,int]]':
+    def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set()) -> 'list[tuple[int,int]]':
         pixels = []
         for y in range(pos[0]-1, pos[0]+2):
             for x in range(pos[1]-1, pos[1]+2):
@@ -13,11 +17,11 @@ class Blob:
                 checked.add((y, x))
                 if img.item(y, x):
                     pixels.append((y, x))
-                    pixels += self.get_blob((y, x), img, checked=checked)
+                    pixels += Blob.get_blob((y, x), img, checked=checked)
                 
         return pixels
     
-    def get_blob_bounds(self, blob: 'list[tuple[int,int]]') -> 'int, int, int, int':
+    def get_blob_bounds(blob: 'list[tuple[int,int]]') -> 'int, int, int, int':
         left, right = blob[0][1], blob[0][1]
         top, bottom = blob[0][0], blob[0][0]
 
@@ -31,7 +35,7 @@ class Blob:
             elif pixel[1] > right:
                 right = pixel[1]
         
-        return top, left, bottom, right
+        return left, top, right-left+1, bottom-top+1
 
 def str_to_grid(string: str):
     return [[letter for letter in row] for row in string.split("\n")]
@@ -60,8 +64,7 @@ def blob_test():
     np_test = np.array(test_arr)
     print(np_test)
     print(np_test.item((3,1)))
-    test = Blob().get_blob((0,2), np_test)
-    print(test)
-    print(Blob().get_blob_bounds(test))
+    test = Blob((0,2), np_test)
+    print(test.x, test.y, test.w, test.h)
 
 blob_test()
