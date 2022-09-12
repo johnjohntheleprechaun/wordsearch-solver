@@ -1,5 +1,3 @@
-from distutils.log import debug
-import inspect
 import cv2
 import numpy as np
 
