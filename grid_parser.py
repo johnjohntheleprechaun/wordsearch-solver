@@ -76,7 +76,7 @@ def test():
     # find blobs
     blobs = get_blobs(bin_img)
     for blob in blobs:
-        img = cv2.rectangle(img, (blob.x, blob.y), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
+        img = cv2.rectangle(img, (blob.x-1, blob.y-1), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
 
     cv2.imshow("blobs image", img)
     cv2.waitKey(0)
