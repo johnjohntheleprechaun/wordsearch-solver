@@ -69,7 +69,7 @@ def get_blobs(img): # binary image
 
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/cropped_word_search.png", cv2.IMREAD_COLOR)
+    img = cv2.imread("test_data/word_search_2.png", cv2.IMREAD_COLOR)
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # convert to binary image
     (thresh, bin_img) = cv2.threshold(grayscale, 127, 256, cv2.THRESH_BINARY)
