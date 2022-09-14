@@ -4,11 +4,19 @@ import numpy as np
 class Blob:
     x, y, w, h = int, int, int, int
     pixels: 'set[tuple[int,int]]'
+    letter: str
 
     def __init__(self, start: 'tuple[int,int]', img: np.ndarray):
         blob = Blob.get_blob(start, img, debug=img)
         self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
+        bg = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
+        for pixel in self.pixels:
+            bg.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
+        test = cv2.cvtColor(bg, cv2.COLOR_GRAY2BGR)
+        
+        cv2.imshow("Letter", test)
+        cv2.waitKey(0)
 
         """for pixel in blob:
             img.itemset(pixel[0], pixel[1], 127)
@@ -67,7 +75,8 @@ def get_blobs(img): # binary image
 
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/word_search_2.png", cv2.IMREAD_COLOR)
+    test = cv2.imread("letter.jpg")
+    img = cv2.imread("test_data/better.jpg", cv2.IMREAD_COLOR)
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # convert to binary image
     (thresh, bin_img) = cv2.threshold(grayscale, 127, 256, cv2.THRESH_BINARY)
