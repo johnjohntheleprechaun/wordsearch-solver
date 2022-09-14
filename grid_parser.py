@@ -1,5 +1,8 @@
 import cv2
 import numpy as np
+import easyocr
+
+reader = easyocr.Reader(['en'])
 
 class Blob:
     x, y, w, h = int, int, int, int
@@ -10,18 +13,13 @@ class Blob:
         blob = Blob.get_blob(start, img, debug=img)
         self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
-        bg = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
+        # Create image from pixels
+        padded = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
         for pixel in self.pixels:
-            bg.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
-        test = cv2.cvtColor(bg, cv2.COLOR_GRAY2BGR)
-        
-        cv2.imshow("Letter", test)
+            padded.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
+        self.letter = reader.recognize(padded)
+        cv2.imshow("Letter", padded)
         cv2.waitKey(0)
-
-        """for pixel in blob:
-            img.itemset(pixel[0], pixel[1], 127)
-        cv2.imshow("progress", img)
-        cv2.waitKey(1)"""
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
@@ -75,7 +73,6 @@ def get_blobs(img): # binary image
 
 def test():
     # read image as grayscale
-    test = cv2.imread("letter.jpg")
     img = cv2.imread("test_data/better.jpg", cv2.IMREAD_COLOR)
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # convert to binary image
