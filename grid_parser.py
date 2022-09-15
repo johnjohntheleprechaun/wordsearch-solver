@@ -17,9 +17,8 @@ class Blob:
         padded = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
         for pixel in self.pixels:
             padded.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
-        self.letter = reader.recognize(padded)
-        cv2.imshow("Letter", padded)
-        cv2.waitKey(0)
+        # Set letter
+        self.letter = reader.recognize(padded)[0][1]
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
@@ -57,8 +56,21 @@ class Blob:
 def str_to_grid(string: str):
     return [[letter for letter in row] for row in string.split("\n")]
 
-def img_to_grid(img): # grayscale image
-    pass
+def img_to_grid(img):
+    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    (tresh, binary) = cv2.threshold(grayscale, 127, 255, cv2.THRESH_BINARY)
+    blobs = get_blobs(binary)
+    grid = []
+    row = []
+    row_height = blobs[0].h
+    current_row = blobs[0].y
+    for blob in blobs:
+        if abs(blob.y - current_row) > row_height:
+            grid.append(row)
+            row = []
+            current_row = blob.y
+        row.append(blob.letter)
+    return grid
 
 def get_blobs(img): # binary image
     blobs: 'list[Blob]' = []
@@ -74,15 +86,8 @@ def get_blobs(img): # binary image
 def test():
     # read image as grayscale
     img = cv2.imread("test_data/better.jpg", cv2.IMREAD_COLOR)
-    grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    # convert to binary image
-    (thresh, bin_img) = cv2.threshold(grayscale, 127, 256, cv2.THRESH_BINARY)
-    # find blobs
-    blobs = get_blobs(bin_img)
-    for blob in blobs:
-        img = cv2.rectangle(img, (blob.x-1, blob.y-1), (blob.x+blob.w, blob.y+blob.h), (255, 0, 0), thickness=1)
-
-    cv2.imshow("blobs image", img)
-    cv2.waitKey(0)
+    grid = img_to_grid(img)
+    for row in grid:
+        print(" ".join(row))
 
 print(test())
