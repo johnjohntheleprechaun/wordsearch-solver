@@ -1,8 +1,5 @@
 import cv2
 import numpy as np
-import easyocr
-
-reader = easyocr.Reader(['en'])
 
 class Blob:
     x, y, w, h = int, int, int, int
@@ -17,8 +14,6 @@ class Blob:
         padded = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
         for pixel in self.pixels:
             padded.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
-        # Set letter
-        self.letter = reader.recognize(padded)[0][1]
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
