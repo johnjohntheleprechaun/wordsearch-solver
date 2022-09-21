@@ -13,9 +13,9 @@ class Blob:
         self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
         # Create image from pixels
-        self.img = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
+        self.img = np.full((self.h, self.w), 255, dtype=np.uint8)
         for pixel in self.pixels:
-            self.img.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
+            self.img.itemset(pixel[0]-self.y, pixel[1]-self.x, 0)
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
