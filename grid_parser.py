@@ -78,11 +78,22 @@ def get_blobs(img): # binary image
                 found_pixels.update(blob.pixels)
     return blobs
 
+def compare_imgs(img1: np.ndarray, img2: np.ndarray):
+    return
+
+def average_hash(img):
+    resized = cv2.resize(img, (8, 8))
+    grayscale = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
+    mean = np.mean(grayscale)
+    (thresh, binary) = cv2.threshold(grayscale, mean, 255, cv2.THRESH_BINARY)
+    
+    cv2.imwrite("out.png", binary)
+
+
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/better.jpg", cv2.IMREAD_COLOR)
-    grid = img_to_grid(img)
-    for row in grid:
-        print(" ".join(row))
+    img = cv2.imread("test_data/image.jpg", cv2.IMREAD_COLOR)
+    return average_hash(img)
+    
 
 print(test())
