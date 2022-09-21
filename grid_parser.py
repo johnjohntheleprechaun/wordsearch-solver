@@ -5,15 +5,16 @@ class Blob:
     x, y, w, h = int, int, int, int
     pixels: 'set[tuple[int,int]]'
     letter: str
+    img: np.ndarray
 
     def __init__(self, start: 'tuple[int,int]', img: np.ndarray):
         blob = Blob.get_blob(start, img, debug=img)
         self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
         # Create image from pixels
-        padded = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
+        self.img = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
         for pixel in self.pixels:
-            padded.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
+            self.img.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
@@ -81,19 +82,17 @@ def get_blobs(img): # binary image
 def compare_imgs(img1: np.ndarray, img2: np.ndarray):
     return
 
-def average_hash(img):
-    resized = cv2.resize(img, (8, 8))
-    grayscale = cv2.cvtColor(resized, cv2.COLOR_BGR2GRAY)
-    mean = np.mean(grayscale)
-    (thresh, binary) = cv2.threshold(grayscale, mean, 255, cv2.THRESH_BINARY)
-    
-    cv2.imwrite("out.png", binary)
-
 
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/image.jpg", cv2.IMREAD_COLOR)
-    return average_hash(img)
-    
+    img = cv2.imread("test_data/better.jpg", cv2.IMREAD_GRAYSCALE)
+    (thresh, binary) = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
+    blobs = get_blobs(binary)
+    first = blobs[0]
+    cv2.imshow("first", first.img)
+    for blob in blobs:
+        cv2.imshow("blob", blob.img)
+        print(compare_imgs(first.img, blob.img))
+        cv2.waitKey(0)
 
 print(test())
