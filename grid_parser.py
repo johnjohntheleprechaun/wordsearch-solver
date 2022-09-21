@@ -79,8 +79,18 @@ def get_blobs(img): # binary image
                 found_pixels.update(blob.pixels)
     return blobs
 
-def compare_imgs(img1: np.ndarray, img2: np.ndarray):
-    return
+def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=50):
+    bin1 = img_to_bin(img1)
+    bin2 = img_to_bin(img2)
+
+    xnor = ~(bin1^bin2)
+    score = bin(xnor).count("1")
+    print(score)
+    return score < tolerance
+
+def img_to_bin(img: np.ndarray):
+    bin_str = "".join(map(lambda n:str(int(n/255)), img.flatten()))
+    return int(bin_str, 2)
 
 
 def test():
@@ -92,7 +102,7 @@ def test():
     cv2.imshow("first", first.img)
     for blob in blobs:
         cv2.imshow("blob", blob.img)
-        print(compare_imgs(first.img, blob.img))
+        print(bin_compare(first.img, blob.img))
         cv2.waitKey(0)
 
 print(test())
