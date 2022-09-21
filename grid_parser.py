@@ -1,3 +1,4 @@
+import enum
 import cv2
 import numpy as np
 
@@ -79,13 +80,14 @@ def get_blobs(img): # binary image
                 found_pixels.update(blob.pixels)
     return blobs
 
-def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=50):
+def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=5):
+    img1 = cv2.resize(img1, (8,8))
+    img2 = cv2.resize(img2, (8,8))
     bin1 = img_to_bin(img1)
     bin2 = img_to_bin(img2)
 
     xnor = ~(bin1^bin2)
     score = bin(xnor).count("1")
-    print(score)
     return score < tolerance
 
 def img_to_bin(img: np.ndarray):
@@ -100,9 +102,12 @@ def test():
     blobs = get_blobs(binary)
     first = blobs[0]
     cv2.imshow("first", first.img)
-    for blob in blobs:
+    for i, blob in enumerate(blobs):
+        same = bin_compare(first.img, blob.img)
         cv2.imshow("blob", blob.img)
-        print(bin_compare(first.img, blob.img))
-        cv2.waitKey(0)
+        if same:
+            cv2.waitKey(0)
+        else:
+            cv2.waitKey(50)
 
-print(test())
+test()
