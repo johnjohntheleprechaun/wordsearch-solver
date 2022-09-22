@@ -57,11 +57,12 @@ def img_to_grid(img):
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (tresh, binary) = cv2.threshold(grayscale, 127, 255, cv2.THRESH_BINARY)
     blobs = get_blobs(binary)
+    registered = register_letters(blobs)
     grid = []
     row = []
     row_height = blobs[0].h
     current_row = blobs[0].y
-    for blob in blobs:
+    for blob in registered:
         if abs(blob.y - current_row) > row_height:
             grid.append(row)
             row = []
@@ -107,10 +108,8 @@ def register_letters(blobs: 'list[Blob]'):
 
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/cropped_word_search.png", cv2.IMREAD_GRAYSCALE)
-    (thresh, binary) = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
-    blobs = get_blobs(binary)
-    registered = register_letters(blobs)
-    print([blob.letter for blob in registered])
+    img = cv2.imread("test_data/cropped_word_search.png")
+    grid = img_to_grid(img)
+    
 
 test()
