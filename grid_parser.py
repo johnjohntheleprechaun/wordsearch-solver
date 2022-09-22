@@ -110,6 +110,7 @@ def test():
     # read image as grayscale
     img = cv2.imread("test_data/cropped_word_search.png")
     grid = img_to_grid(img)
-    
+    for row in grid:
+        print(" ".join(row))
 
 test()
