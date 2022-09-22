@@ -1,3 +1,4 @@
+import enum
 import cv2
 import numpy as np
 
@@ -5,15 +6,16 @@ class Blob:
     x, y, w, h = int, int, int, int
     pixels: 'set[tuple[int,int]]'
     letter: str
+    img: np.ndarray
 
     def __init__(self, start: 'tuple[int,int]', img: np.ndarray):
         blob = Blob.get_blob(start, img, debug=img)
         self.pixels = set(blob)
         self.x, self.y, self.w, self.h = Blob.get_blob_bounds(blob)
         # Create image from pixels
-        padded = np.full((self.h+10, self.w+10), 255, dtype=np.uint8)
+        self.img = np.full((self.h, self.w), 255, dtype=np.uint8)
         for pixel in self.pixels:
-            padded.itemset(pixel[0]-self.y+5, pixel[1]-self.x+5, 0)
+            self.img.itemset(pixel[0]-self.y, pixel[1]-self.x, 0)
     
     def get_blob(pos: 'tuple[int,int]', img: np.ndarray, checked: 'set[tuple[int,int]]'=set(), debug=None) -> 'list[tuple[int,int]]':
         pixels = []
@@ -55,11 +57,12 @@ def img_to_grid(img):
     grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     (tresh, binary) = cv2.threshold(grayscale, 127, 255, cv2.THRESH_BINARY)
     blobs = get_blobs(binary)
+    registered = register_letters(blobs)
     grid = []
     row = []
     row_height = blobs[0].h
     current_row = blobs[0].y
-    for blob in blobs:
+    for blob in registered:
         if abs(blob.y - current_row) > row_height:
             grid.append(row)
             row = []
@@ -78,11 +81,35 @@ def get_blobs(img): # binary image
                 found_pixels.update(blob.pixels)
     return blobs
 
+def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=10):
+    score = 0
+    for a, b in zip(img1.flatten(), img2.flatten()):
+        a = int(a/255)
+        b = int(b/255)
+        if a != b:
+            score += 1
+    return score < tolerance
+
+def register_letters(blobs: 'list[Blob]'):
+    found_letters: 'list[tuple(str, np.ndarray)]' = []
+    for i, blob in enumerate(blobs):
+        sized = cv2.resize(blob.img, (8,8))
+        for letter, comp_img in found_letters:
+            if bin_compare(sized, comp_img):
+                blobs[i].letter = letter
+                break
+        else:
+            cv2.imshow("letter", blob.img)
+            letter = chr(cv2.waitKey(0))
+            blobs[i].letter = letter
+            found_letters.append((letter, sized))
+    return blobs
+
+
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/better.jpg", cv2.IMREAD_COLOR)
+    img = cv2.imread("test_data/cropped_word_search.png")
     grid = img_to_grid(img)
-    for row in grid:
-        print(" ".join(row))
+    
 
-print(test())
+test()
