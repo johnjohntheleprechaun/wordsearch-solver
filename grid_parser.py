@@ -80,9 +80,7 @@ def get_blobs(img): # binary image
                 found_pixels.update(blob.pixels)
     return blobs
 
-def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=8):
-    img1 = cv2.resize(img1, (8,8))
-    img2 = cv2.resize(img2, (8,8))
+def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=10):
     score = 0
     for a, b in zip(img1.flatten(), img2.flatten()):
         a = int(a/255)
@@ -91,19 +89,28 @@ def bin_compare(img1: np.ndarray, img2: np.ndarray, tolerance=8):
             score += 1
     return score < tolerance
 
+def register_letters(blobs: 'list[Blob]'):
+    found_letters: 'list[tuple(str, np.ndarray)]' = []
+    for i, blob in enumerate(blobs):
+        sized = cv2.resize(blob.img, (8,8))
+        for letter, comp_img in found_letters:
+            if bin_compare(sized, comp_img):
+                blobs[i].letter = letter
+                break
+        else:
+            cv2.imshow("letter", blob.img)
+            letter = chr(cv2.waitKey(0))
+            blobs[i].letter = letter
+            found_letters.append((letter, sized))
+    return blobs
+
+
 def test():
     # read image as grayscale
-    img = cv2.imread("test_data/better.jpg", cv2.IMREAD_GRAYSCALE)
+    img = cv2.imread("test_data/cropped_word_search.png", cv2.IMREAD_GRAYSCALE)
     (thresh, binary) = cv2.threshold(img, 127, 255, cv2.THRESH_BINARY)
     blobs = get_blobs(binary)
-    first = blobs[0]
-    cv2.imshow("first", first.img)
-    for i, blob in enumerate(blobs):
-        cv2.imshow("blob", blob.img)
-        same = bin_compare(first.img, blob.img)
-        if same:
-            cv2.waitKey(0)
-        else:
-            cv2.waitKey(50)
+    registered = register_letters(blobs)
+    print([blob.letter for blob in registered])
 
 test()
